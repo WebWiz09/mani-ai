@@ -285,7 +285,7 @@ export default function App() {
     setUserInput('');
 
     const updatedAnswers = [...interview.answers, { question: currentQuestion, answer: currentAnswer }];
-    setInterview(prev => ({ ...prev, answers: updatedAnswers }));
+    setInterview(prev => ({ ...prev, answers: updatedAnswers, currentQuestion: '' }));
     
     if (updatedAnswers.length >= 8) {
       handleGenerate(updatedAnswers);
@@ -704,30 +704,31 @@ export default function App() {
                 
                 <div className="mt-20 pt-10 border-t border-mani-border flex flex-wrap gap-8 md:gap-12 justify-center">
                   <button
-  onClick={() => {
-    const blob = new Blob([finalResult], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${interview.type}-mani.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }}
-  className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest">
-  <Download className="w-4 h-4" /> Save as PDF
-</button>
-<button
-  onClick={() => {
-    if (navigator.share) {
-      navigator.share({ title: `My ${interview.type}`, text: finalResult });
-    } else {
-      navigator.clipboard.writeText(finalResult);
-      alert('Link copied to clipboard!');
-    }
-  }}
-  className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest">
-  <Share2 className="w-4 h-4" /> Share Link
-</button>
+                    onClick={() => {
+                      const clean = finalResult.replace(/[#*`]/g, '');
+                      const blob = new Blob([clean], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${interview.type.replace(/\s+/g, '-')}-mani.txt`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest">
+                    <Download className="w-4 h-4" /> Save as PDF
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({ title: `My ${interview.type} — MANI`, text: finalResult, url: window.location.href });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Link copied to clipboard!');
+                      }
+                    }}
+                    className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest">
+                    <Share2 className="w-4 h-4" /> Share Link
+                  </button>
                 </div>
               </div>
             </motion.div>
