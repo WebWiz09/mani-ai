@@ -14,24 +14,23 @@ const OUTPUT_INSTRUCTIONS: Record<string, string> = {
   "Professional Bio": "Write a concise third-person bio. 3 short paragraphs max. NO headers. NO bullet points. Under 120 words.",
 };
 
-async function callClaude(prompt: string): Promise<string> {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
+async function callGroq(prompt: string): Promise<string> {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": import.meta.env.VITE_ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true"
+      "Authorization": `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
       max_tokens: 1024,
-      messages: [{ role: "user", content: prompt }]
+      temperature: 0.7
     })
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error?.message || "API error");
-  return data.content[0].text.trim();
+  return data.choices[0].message.content.trim();
 }
 
 export async function getNextQuestion(state: InterviewState): Promise<string> {
@@ -53,10 +52,10 @@ export async function getNextQuestion(state: InterviewState): Promise<string> {
   `;
 
   try {
-    const text = await callClaude(prompt);
+    const text = await callGroq(prompt);
     return text === "COMPLETE" ? "COMPLETE" : text;
   } catch (error: any) {
-    console.error("Claude API Error:", error);
+    console.error("Groq API Error:", error);
     return "I encountered an error. Please try again.";
   }
 }
@@ -76,9 +75,9 @@ export async function generateOutput(state: InterviewState): Promise<string> {
   `;
 
   try {
-    return await callClaude(prompt);
+    return await callGroq(prompt);
   } catch (error: any) {
-    console.error("Claude API Error:", error);
+    console.error("Groq API Error:", error);
     return "Failed to generate output. Please try again.";
   }
 }
