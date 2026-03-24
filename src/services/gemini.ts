@@ -58,7 +58,7 @@ export async function getNextQuestion(state: InterviewState): Promise<string> {
 
   try {
     const response = await withRetry(() => ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.0-flash-exp",
       contents: [{ parts: [{ text: prompt }] }],
       config: { temperature: 0.7 }
     }));
@@ -95,7 +95,7 @@ export async function generateOutput(state: InterviewState): Promise<string> {
 
   try {
     const response = await withRetry(() => ai.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.0-flash-exp",
       contents: [{ parts: [{ text: prompt }] }],
     }));
     return response.text || "Failed to generate output.";
@@ -108,6 +108,9 @@ export async function generateOutput(state: InterviewState): Promise<string> {
     if (isQuotaError) {
       return "Quota exceeded. Please try again in a few minutes.";
     }
+    return "Failed to generate output due to an error.";
+  }
+}
     return "Failed to generate output due to an error.";
   }
 }
