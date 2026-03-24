@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import jsPDF from 'jspdf';
 import { 
   Send, 
   RefreshCw, 
@@ -653,14 +652,14 @@ export default function App() {
               </div>
             </motion.div>
           )}
-  {appState === 'result' && (
-            <motion.div
+
+          {appState === 'result' && (
+            <motion.div 
               key="result"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               className="space-y-12 max-w-5xl mx-auto"
             >
-              {/* Header */}
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div className="space-y-4">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-mani-yellow text-black font-pixel text-[10px] uppercase tracking-widest rounded-full">
@@ -670,14 +669,14 @@ export default function App() {
                   <p className="text-[14px] opacity-50 font-medium uppercase tracking-widest text-mani-text">Crafted by Mani</p>
                 </div>
                 <div className="flex flex-wrap gap-4">
-                  <button
+                  <button 
                     onClick={copyToClipboard}
                     className="flex items-center gap-3 px-8 py-4 bg-mani-yellow text-black rounded-2xl hover:bg-white transition-all font-pixel text-[12px] uppercase tracking-widest shadow-xl"
                   >
                     {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     {copied ? 'Copied' : 'Copy Text'}
                   </button>
-                  <button
+                  <button 
                     onClick={reset}
                     className="flex items-center gap-3 px-8 py-4 bg-white text-black rounded-2xl hover:bg-mani-yellow transition-all font-pixel text-[12px] uppercase tracking-widest shadow-xl"
                   >
@@ -686,132 +685,54 @@ export default function App() {
                   </button>
                 </div>
               </div>
- 
-              {/* Paper-like document editor */}
-              <div
-                id="mani-output"
-                style={{
-                  background: '#FFFDF7',
-                  borderRadius: '4px',
-                  boxShadow: '0 1px 1px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.08), 0 16px 32px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(0,0,0,0.06)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-                className="p-8 md:p-16"
-              >
-                {/* Paper top strip */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: '#E8A020' }} />
- 
-                {/* Paper holes */}
-                <div style={{ position: 'absolute', top: '32px', left: '28px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
-                  {[0,1,2].map(i => (
-                    <div key={i} style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F0EDE0', border: '1px solid #E0DDD0' }} />
-                  ))}
+
+              <div className="bg-mani-dark border border-mani-border rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-20 relative overflow-hidden shadow-2xl">
+                <div className="absolute top-0 left-0 w-full h-1 bg-mani-yellow" />
+                <div className="prose prose-lg max-w-none text-mani-text">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({node, ...props}) => <h1 className="text-[24px] md:text-[32px] font-pixel text-mani-yellow uppercase tracking-widest mb-10 border-b border-mani-border pb-6" {...props} />,
+                      h2: ({node, ...props}) => <h2 className="text-[18px] md:text-[20px] font-pixel uppercase tracking-widest mt-16 mb-8 text-mani-text" {...props} />,
+                      p: ({node, ...props}) => <p className="text-[16px] md:text-[18px] leading-[1.8] mb-8 font-medium text-mani-text" {...props} />,
+                      li: ({node, ...props}) => <li className="text-[16px] md:text-[18px] leading-[1.8] mb-4 font-medium text-mani-text" {...props} />,
+                      strong: ({node, ...props}) => <strong className="text-mani-yellow font-bold" {...props} />,
+                    }}
+                  >
+                    {finalResult}
+                  </ReactMarkdown>
                 </div>
- 
-                {/* Document content */}
-                <div style={{ paddingLeft: '24px' }}>
-                  {/* Document header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px', paddingBottom: '20px', borderBottom: '1px solid #E8E4D8' }}>
-                    <div>
-                      <div style={{ fontSize: '11px', letterSpacing: '0.15em', color: '#B0A990', textTransform: 'uppercase', marginBottom: '6px', fontFamily: 'monospace' }}>MANI — AI Document</div>
-                      <div style={{ fontSize: '22px', fontWeight: '600', color: '#1A1A1A', letterSpacing: '-0.3px' }}>{interview.type}</div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '11px', color: '#B0A990', fontFamily: 'monospace' }}>{new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                      <div style={{ width: '40px', height: '2px', background: '#E8A020', marginTop: '8px', marginLeft: 'auto' }} />
-                    </div>
-                  </div>
- 
-                  {/* Document body */}
-                  <div style={{ fontFamily: 'Georgia, serif' }}>
-                    <ReactMarkdown
-                      components={{
-                        h1: ({node, ...props}) => <h1 style={{ fontSize: '18px', fontWeight: '700', color: '#1A1A1A', marginBottom: '16px', marginTop: '32px', letterSpacing: '-0.2px' }} {...props} />,
-                        h2: ({node, ...props}) => <h2 style={{ fontSize: '15px', fontWeight: '700', color: '#333', marginBottom: '12px', marginTop: '28px', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'sans-serif' }} {...props} />,
-                        p: ({node, ...props}) => <p style={{ fontSize: '16px', lineHeight: '1.9', color: '#2C2C2C', marginBottom: '20px' }} {...props} />,
-                        li: ({node, ...props}) => <li style={{ fontSize: '15px', lineHeight: '1.8', color: '#2C2C2C', marginBottom: '8px' }} {...props} />,
-                        strong: ({node, ...props}) => <strong style={{ color: '#1A1A1A', fontWeight: '700' }} {...props} />,
-                        ul: ({node, ...props}) => <ul style={{ paddingLeft: '20px', marginBottom: '20px' }} {...props} />,
-                        ol: ({node, ...props}) => <ol style={{ paddingLeft: '20px', marginBottom: '20px' }} {...props} />,
-                      }}
-                    >
-                      {finalResult}
-                    </ReactMarkdown>
-                  </div>
- 
-                  {/* Document footer */}
-                  <div style={{ marginTop: '48px', paddingTop: '20px', borderTop: '1px solid #E8E4D8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '11px', color: '#C0BB9E', fontFamily: 'monospace', letterSpacing: '0.1em' }}>Generated by MANI · maniai.vercel.app</div>
-                    <div style={{ width: '24px', height: '24px', background: '#0B2B5C', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ color: '#E8A020', fontSize: '12px', fontWeight: '700', fontFamily: 'monospace' }}>M</span>
-                    </div>
-                  </div>
+                
+                <div className="mt-20 pt-10 border-t border-mani-border flex flex-wrap gap-8 md:gap-12 justify-center">
+                  <button
+                    onClick={() => {
+                      const clean = finalResult.replace(/[#*`]/g, '');
+                      const blob = new Blob([clean], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${interview.type.replace(/\s+/g, '-')}-mani.txt`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest">
+                    <Download className="w-4 h-4" /> Save as PDF
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (navigator.share) {
+                        navigator.share({ title: `My ${interview.type} — MANI`, text: finalResult, url: window.location.href });
+                      } else {
+                        navigator.clipboard.writeText(window.location.href);
+                        alert('Link copied to clipboard!');
+                      }
+                    }}
+                    className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest">
+                    <Share2 className="w-4 h-4" /> Share Link
+                  </button>
                 </div>
-              </div>
- 
-              {/* Action buttons */}
-              <div className="flex flex-wrap gap-6 justify-center">
-                <button
-                  onClick={async () => {
-                    const { default: jsPDF } = await import('jspdf');
-                    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-                    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-                    
-                    doc.setFillColor(255, 253, 247);
-                    doc.rect(0, 0, 210, 297, 'F');
-                    doc.setFillColor(232, 160, 32);
-                    doc.rect(0, 0, 210, 3, 'F');
-                    
-                    doc.setFontSize(8);
-                    doc.setTextColor(176, 169, 144);
-                    doc.text('MANI — AI DOCUMENT', 20, 15);
-                    doc.setFontSize(16);
-                    doc.setTextColor(26, 26, 26);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(interview.type.toUpperCase(), 20, 25);
-                    doc.setFontSize(8);
-                    doc.setTextColor(176, 169, 144);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text(today, 160, 25);
-                    doc.setDrawColor(232, 228, 216);
-                    doc.line(20, 30, 190, 30);
-                    
-                    const clean = finalResult.replace(/[#*`]/g, '').replace(/\n{3,}/g, '\n\n');
-                    doc.setFontSize(11);
-                    doc.setTextColor(44, 44, 44);
-                    const lines = doc.splitTextToSize(clean, 165);
-                    doc.text(lines, 20, 42);
-                    
-                    doc.setFontSize(8);
-                    doc.setTextColor(176, 169, 144);
-                    doc.text('Generated by MANI · maniai.vercel.app', 20, 285);
-                    
-                    doc.save(`${interview.type.replace(/\s+/g, '-')}-mani.pdf`);
-                  }}
-                  className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest"
-                >
-                  <Download className="w-4 h-4" /> Save as PDF
-                </button>
-                <button
-                  onClick={() => {
-                    const encoded = btoa(encodeURIComponent(finalResult));
-                    const shareUrl = `${window.location.origin}?result=${encoded}&type=${encodeURIComponent(interview.type)}`;
-                    if (navigator.share) {
-                      navigator.share({ title: `My ${interview.type} — MANI`, text: `Check out my ${interview.type} created with MANI`, url: shareUrl });
-                    } else {
-                      navigator.clipboard.writeText(shareUrl);
-                      alert('Share link copied to clipboard!');
-                    }
-                  }}
-                  className="flex items-center gap-2 text-[10px] md:text-[11px] font-pixel text-mani-text/50 hover:text-mani-yellow transition-colors uppercase tracking-widest"
-                >
-                  <Share2 className="w-4 h-4" /> Share Link
-                </button>
               </div>
             </motion.div>
           )}
- 
         </AnimatePresence>
       </main>
 
